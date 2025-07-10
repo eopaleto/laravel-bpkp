@@ -1,6 +1,32 @@
 <x-filament::page class="max-w-full px-2">
-    <div class="mb-1">
-        {{ $this->form }}
+    <div class="col-span-full bg-white rounded-xl p-4 shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-red-100 p-2 rounded">
+                <input type="text" wire:model.debounce.500ms="search" placeholder="Cari Produk..."
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500">
+            </div>
+
+            <div class="p-2 rounded">
+                <select wire:model="kategori_id"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-gray-600">
+                    <option value="">-- Semua Kategori --</option>
+                    @foreach (\App\Models\Kategori::all() as $kategori)
+                        <option value="{{ $kategori->id }}">{{ $kategori->nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="bg-blue-100 p-2 rounded">
+                <select wire:model="sortBy"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-amber-500 focus:border-amber-500 text-gray-600">
+                    <option value="terbaru">Terbaru</option>
+                    <option value="harga_terendah">Harga Termurah</option>
+                    <option value="harga_tertinggi">Harga Termahal</option>
+                    <option value="stok_terbanyak">Stok Terbanyak</option>
+                    <option value="nama_asc">Nama (A-Z)</option>
+                </select>
+            </div>
+        </div>
     </div>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if (session('success'))

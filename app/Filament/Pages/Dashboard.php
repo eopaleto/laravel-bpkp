@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use Filament\Pages\Page;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Support\Facades\Auth;
+use App\Filament\Widgets\StatsOverview;
 
 class Dashboard extends Page
 {
@@ -24,6 +25,7 @@ class Dashboard extends Page
     {
         return [
             AccountWidget::class,
+            StatsOverview::class,
         ];
     }
 }

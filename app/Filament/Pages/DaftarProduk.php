@@ -2,17 +2,22 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\Barang;
-use Filament\Pages\Page;
-use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms;
+use App\Models\User;
+use App\Models\Barang;
+use App\Models\Kategori;
 use Filament\Forms\Form;
+use Filament\Pages\Page;
 use App\Models\KeranjangBarang;
+use Filament\Forms\Components\Grid;
+use Illuminate\Support\Facades\Auth;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Components\TextInput;
+use Livewire\Component;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action;
-use App\Models\User;
+use Filament\Forms\Concerns\InteractsWithForms;
 
 class DaftarProduk extends Page implements HasForms
 {
@@ -27,34 +32,38 @@ class DaftarProduk extends Page implements HasForms
 
     public string $sortBy = 'terbaru';
 
-    public $produk; // pakai Collection agar bisa akses ->property
+    public $produk;
+    public string $search = '';
+    public string|int|null $kategori_id = null;
 
     public function mount(): void
     {
         $this->filterProduk();
     }
 
+    public function updated($propertyName): void
+    {
+        logger("Updated: " . $propertyName);
+        $this->filterProduk();
+    }
+
     public function form(Form $form): Form
     {
         return $form
-            ->schema([
-                Forms\Components\Select::make('sortBy')
-                    ->label('Urutkan Berdasarkan')
-                    ->options([
-                        'terbaru' => 'Terbaru',
-                        'harga_terendah' => 'Harga Termurah',
-                        'harga_tertinggi' => 'Harga Termahal',
-                        'stok_terbanyak' => 'Stok Terbanyak',
-                        'nama_asc' => 'Nama (A-Z)',
-                    ])
-                    ->live()
-                    ->afterStateUpdated(fn() => $this->filterProduk()),
-            ]);
+            ->schema([]);
     }
 
     public function filterProduk(): void
     {
         $query = Barang::query();
+
+        if ($this->search) {
+            $query->where('nama', 'like', '%' . $this->search . '%');
+        }
+
+        if ($this->kategori_id) {
+            $query->where('kategori_id', $this->kategori_id);
+        }
 
         switch ($this->sortBy) {
             case 'harga_terendah':
@@ -74,7 +83,7 @@ class DaftarProduk extends Page implements HasForms
                 break;
         }
 
-        $this->produk = $query->get(); // KEMBALI KE KOLEKSI
+        $this->produk = $query->get();
     }
 
     public function addToCart($kode): void

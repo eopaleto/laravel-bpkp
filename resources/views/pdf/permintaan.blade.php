@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>Invoice Template</title>
+    <title>Invoice Permintaan Barang</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <style>
