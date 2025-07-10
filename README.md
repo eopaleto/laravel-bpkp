@@ -18,19 +18,46 @@ Sebelum memulai, pastikan sistem Anda memiliki:
 - Git
 - Laravel CLI
 - Ekstensi PHP:
-  - `pdo`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `bcmath`, `fileinfo`
+  - `pdo`
+  - `mbstring`
+  - `openssl`
+  - `tokenizer`
+  - `xml`
+  - `ctype`
+  - `bcmath`
+  - `fileinfo`
 
 ---
 
-## Instalasi
-`git clone https://github.com/username/nama-repo.git`
-`composer install`
-`npm install && npm run build`
-`copy .env.example .env`
-`php artisan key:generate`
-`php artisan migrate`
-`php artisan db:seed`
-`php artisan serve`
+## 🚀 Instalasi
+
+```bash
+# 1. Clone repository
+git clone https://github.com/username/nama-repo.git
+cd nama-repo
+
+# 2. Install dependency PHP
+composer install
+
+# 3. Install dependency frontend
+npm install && npm run build
+
+# 4. Salin file konfigurasi .env
+cp .env.example .env
+
+# 5. Generate app key
+php artisan key:generate
+
+# 6. Atur konfigurasi database di file .env
+
+# 7. Jalankan migrasi database
+php artisan migrate
+
+# 8. (Opsional) Isi data awal
+php artisan db:seed
+
+# 9. Jalankan server lokal
+php artisan serve
 
 ## About Laravel
 
