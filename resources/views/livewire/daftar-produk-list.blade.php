@@ -1,6 +1,5 @@
-<x-filament::page class="max-w-full px-2">
-    <livewire:daftar-produk-list />
-    {{-- <div class="col-span-full bg-white rounded-xl p-4 shadow-sm">
+<div>
+    <div class="col-span-full bg-white rounded-xl p-4 shadow-sm">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="p-2 rounded">
                 <input type="text" wire:model.debounce.500ms="search" placeholder="Cari Produk..."
@@ -35,7 +34,7 @@
             {{ session('success') }}
         </div>
     @endif
-    <div class="text-xs text-gray-500">
+    <div class="text-xs text-gray-500 p-4">
         Search: {{ $search }} |
         Sort: {{ $sortBy }} |
         Kategori ID: {{ $kategori_id }}
@@ -47,7 +46,7 @@
                 <div
                     class="w-full aspect-square overflow-hidden rounded-xl bg-gray-100 flex items-center justify-center">
                     <img src="{{ asset('storage/' . $barang->avatar) }}" alt="{{ $barang->nama }}"
-                        class="object-cover w-full h-full transition duration-300">
+                        class="object-cover w-full h-full transition duration-300" />
                 </div>
 
                 <div class="mt-4 space-y-1">
@@ -69,5 +68,5 @@
     </div>
     <div class="mt-4">
         {{ $this->produk->links() }}
-    </div> --}}
-</x-filament::page>
+    </div>
+</div>

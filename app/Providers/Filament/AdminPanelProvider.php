@@ -6,6 +6,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
 use Filament\PanelProvider;
+use Filament\Support\Assets\Css;
 use App\Filament\Pages\Dashboard;
 use Filament\Navigation\MenuItem;
 use App\Filament\Widgets\CartIcon;
@@ -33,6 +34,13 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('bpkp')
             ->login()
+            ->brandLogo(asset('img/logo-bpkp.png'))
+            ->brandLogoHeight('50px')
+            ->sidebarWidth('18rem')
+            ->collapsedSidebarWidth('9rem')
+            ->assets([
+                Css::make('custom-style', asset('css/custom-filament.css')),
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])

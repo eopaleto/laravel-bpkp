@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\User;
 use Filament\Pages\Page;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Support\Facades\Auth;

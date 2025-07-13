@@ -26,6 +26,11 @@ class UserResource extends Resource
     protected static ?string $navigationLabel = 'Users Management';
     protected static ?string $navigationGroup = 'Menu Khusus';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) User::count();
+    }
+    
     public static function form(Form $form): Form
     {
         return $form->schema([

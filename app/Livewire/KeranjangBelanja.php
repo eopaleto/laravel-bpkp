@@ -58,7 +58,11 @@ class KeranjangBelanja extends Component
 
     public function checkout()
     {
-        $items = KeranjangBarang::with('barang')->where('user_id', auth()->id())->get();
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $items = KeranjangBarang::with('barang')->where('user_id', Auth::id())->get();
 
         if ($items->isEmpty()) {
             Notification::make()
@@ -75,7 +79,7 @@ class KeranjangBelanja extends Component
         }
 
         $permintaan = Permintaan::create([
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'total' => $total,
             'status' => 'Menunggu',
         ]);
@@ -90,7 +94,7 @@ class KeranjangBelanja extends Component
             ]);
         }
 
-        KeranjangBarang::where('user_id', auth()->id())->delete();
+        KeranjangBarang::where('user_id', Auth::id())->delete();
 
         Notification::make()
             ->title('Checkout berhasil')

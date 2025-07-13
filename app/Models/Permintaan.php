@@ -25,9 +25,13 @@ class Permintaan extends Model
     {
         return $this->items->sum('jumlah');
     }
-
     public function items()
     {
         return $this->hasMany(PermintaanItems::class, 'permintaan_checkout_id');
+    }
+
+    public function logPermintaan()
+    {
+        return $this->hasMany(LogPermintaan::class);
     }
 }

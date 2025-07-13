@@ -4,10 +4,11 @@ namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
+use App\Models\Barang;
 use Filament\Forms\Form;
 use App\Models\Permintaan;
 use Filament\Tables\Table;
-use App\Models\PermintaanItems;
+use App\Models\LogPermintaan;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,13 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\PermintaanResource\Pages;
+use App\Filament\Resources\PermintaanResource\Pages\EditPermintaan;
+use App\Filament\Resources\PermintaanResource\Pages\ListPermintaans;
 
 class PermintaanResource extends Resource
 {
@@ -31,6 +38,16 @@ class PermintaanResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return null;
+        }
+
+        if ($user->hasRole('User')) {
+            return (string) Permintaan::where('user_id', $user->id)->count();
+        }
+
         return (string) Permintaan::count();
     }
 
@@ -74,15 +91,24 @@ class PermintaanResource extends Resource
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn($record) => route('permintaan.pdf', $record))
                     ->openUrlInNewTab()
-                    ->visible(fn($record) => auth()->user()->hasRole('User') && $record->status === 'Disetujui'),
-                ViewAction::make()
-                    ->label('Lihat Detail')
+                    ->visible(fn($record) => Auth::user()->hasRole(roles: 'User') && $record->status === 'Disetujui'),
+                Action::make('lihat-detail')
+                    ->label('Detail')
+                    ->icon('heroicon-o-eye')
                     ->form([
                         Section::make('Detail Barang')
                             ->schema([
                                 Repeater::make('items')
                                     ->label('Daftar Barang')
-                                    ->relationship('items')
+                                    ->default(function ($record) {
+                                        return $record->items->map(function ($item) {
+                                            return [
+                                                'nama_barang' => $item->nama_barang,
+                                                'jumlah' => $item->jumlah,
+                                                'subtotal' => 'Rp' . number_format($item->subtotal, 0, ',', '.'),
+                                            ];
+                                        })->toArray();
+                                    })
                                     ->schema([
                                         TextInput::make('nama_barang')
                                             ->label('Barang')
@@ -91,21 +117,77 @@ class PermintaanResource extends Resource
                                         TextInput::make('jumlah')
                                             ->label('Jumlah')
                                             ->disabled(),
-
                                         TextInput::make('subtotal')
                                             ->label('Subtotal (Rp)')
-                                            ->disabled()
-                                            ->formatStateUsing(fn($state) => 'Rp' . number_format($state, 0, ',', '.')),
+                                            ->disabled(),
                                     ])
                                     ->columns(3)
-                                    ->disabled(),
-                            ]),
-                    ])
-                    ->visible(fn() => auth()->user()?->hasRole('Admin')),
+                                    ->disabled()
+                                    ->dehydrated(false),
 
-                EditAction::make()
-                    ->label('Ubah Status')
-                    ->visible(fn() => auth()->user()?->hasRole('Admin')),
+                                Placeholder::make('total')
+                                    ->label('')
+                                    ->content(function ($record) {
+                                        $total = $record->items->sum('subtotal');
+                                        return 'Total Harga : Rp' . number_format($total, 0, ',', '.');
+                                    })
+                                    ->extraAttributes([
+                                        'class' => 'text-right font-semibold text-red-700 text-lg',
+                                    ]),
+
+                                Select::make('status')
+                                    ->name('status')
+                                    ->label('Ubah Status Permintaan')
+                                    ->options([
+                                        'Menunggu' => 'Menunggu',
+                                        'Disetujui' => 'Disetujui',
+                                        'Ditolak' => 'Ditolak',
+                                    ])
+                                    ->default(fn($record) => $record->status)
+                                    ->visible(fn() => Auth::user()?->hasRole('Admin')),
+                            ])
+                    ])
+                    ->visible(fn() => Auth::user()?->hasRole('Admin'))
+                    ->action(function (array $data, $record): void {
+                        $statusLama = $record->status;
+                        $statusBaru = $data['status'];
+
+                        if ($statusLama === 'Disetujui' && $statusBaru !== 'Disetujui') {
+                            foreach ($record->items as $item) {
+                                $barang = \App\Models\Barang::where('nama', $item->nama_barang)->first();
+                                if ($barang) {
+                                    $barang->increment('sisa', $item->jumlah);
+                                }
+                            }
+                        }
+
+                        if ($statusBaru === 'Disetujui' && $statusLama !== 'Disetujui') {
+                            foreach ($record->items as $item) {
+                                $barang = \App\Models\Barang::where('nama', $item->nama_barang)->first();
+                                if ($barang) {
+                                    $barang->decrement('sisa', $item->jumlah);
+                                }
+                            }
+                        }
+
+                        $record->update([
+                            'status' => $statusBaru,
+                        ]);
+
+                        LogPermintaan::create([
+                            'permintaan_id' => $record->id,
+                            'status_lama' => $statusLama,
+                            'status_baru' => $statusBaru,
+                            'user_id' => Auth::id(),
+                            'keterangan' => 'Status diubah via halaman admin.',
+                        ]);
+
+                        Notification::make()
+                            ->title('Status Diperbarui')
+                            ->body('Status permintaan diubah menjadi: ' . $statusBaru)
+                            ->success()
+                            ->send();
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -125,7 +207,7 @@ class PermintaanResource extends Resource
     {
         return [
             'index' => Pages\ListPermintaans::route('/'),
-            'edit' => Pages\EditPermintaan::route('/{record}/edit'),
+            // 'edit' => Pages\EditPermintaan::route('/{record}/edit'),
         ];
     }
 

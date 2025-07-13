@@ -28,6 +28,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\BarangResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\BarangResource\RelationManagers;
+use App\Models\Permintaan;
 
 class BarangResource extends Resource
 {
@@ -39,6 +40,11 @@ class BarangResource extends Resource
     protected static ?string $pluralModelLabel = 'Barang';
     protected static ?string $navigationGroup = 'Menu';
     protected static ?string $slug = 'barang';
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) Barang::count();
+    }
 
     public static function form(Form $form): Form
     {

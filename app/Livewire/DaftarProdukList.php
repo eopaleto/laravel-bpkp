@@ -1,48 +1,26 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Livewire;
 
 use App\Models\Barang;
+use Livewire\Component;
 use App\Models\Kategori;
 use Livewire\WithPagination;
-use Filament\Pages\Page;
-use Illuminate\Support\Facades\Auth;
 use App\Models\KeranjangBarang;
+use Livewire\Attributes\Computed;
+use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 use Filament\Notifications\Actions\Action;
 
-class DaftarProduk extends Page
+class DaftarProdukList extends Component
 {
     use WithPagination;
-
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
-    protected static ?string $title = 'Daftar Produk';
-    protected static ?string $navigationLabel = 'Daftar Produk';
-    protected static string $view = 'filament.pages.daftar-produk';
-    protected static ?string $navigationGroup = 'Menu';
-    protected static ?string $slug = 'daftar-produk';
 
     public string $search = '';
     public string $sortBy = 'terbaru';
     public string|int|null $kategori_id = null;
 
-    public function mount(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updated($field): void
-    {
-        if (in_array($field, ['search', 'sortBy', 'kategori_id'])) {
-            $this->resetPage();
-        }
-    }
-
-    public function getKategori()
-    {
-        return Kategori::orderBy('nama')->get();
-    }
-
+    #[Computed]
     public function getProdukProperty()
     {
         $query = Barang::query();
@@ -76,7 +54,12 @@ class DaftarProduk extends Page
         return $query->paginate(8);
     }
 
-    public function addToCart($kode): void
+    public function getKategori()
+    {
+        return Kategori::orderBy('nama')->get();
+    }
+
+    public function addToCart($kode)
     {
         $userId = Auth::id();
 
@@ -107,11 +90,15 @@ class DaftarProduk extends Page
             ->send();
     }
 
-    public static function canAccess(): bool
+    public function updated($field)
     {
-        /** @var User|null $user */
-        $user = Auth::user();
+        if (in_array($field, ['search', 'sortBy', 'kategori_id'])) {
+            $this->resetPage();
+        }
+    }
 
-        return $user?->hasRole('User');
+    public function render()
+    {
+        return view('livewire.daftar-produk-list');
     }
 }
