@@ -54,6 +54,12 @@ class KeranjangBelanja extends Component
             $item->delete();
             $this->loadItems();
         }
+        Notification::make()
+            ->title('Barang berhasil dihapus!')
+            ->body('Barang Keranjang anda berhasil dihapus')
+            ->success()
+            ->persistent()
+            ->send();
     }
 
     public function checkout()
