@@ -9,6 +9,8 @@ use Filament\Forms\Form;
 use App\Models\Permintaan;
 use Filament\Tables\Table;
 use App\Models\LogPermintaan;
+use App\Models\LogBarangMasuk;
+use App\Models\LogBarangKeluar;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
@@ -45,10 +47,17 @@ class PermintaanResource extends Resource
         }
 
         if ($user->hasRole('User')) {
-            return (string) Permintaan::where('user_id', $user->id)->count();
+            return (string) Permintaan::where('user_id', $user->id)
+                ->where('status', 'Menunggu')
+                ->count();
         }
 
-        return (string) Permintaan::count();
+        return (string) Permintaan::where('status', 'Menunggu')->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
     }
 
     public static function form(Form $form): Form
@@ -69,6 +78,7 @@ class PermintaanResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('user.name')->label('Nama Lengkap')->searchable(),
+                TextColumn::make('user.unit.name')->label('Nama Unit')->searchable(),
                 TextColumn::make('total')->label('Total Harga')->money('IDR'),
                 TextColumn::make('total_barang')
                     ->label('Total Barang')
@@ -154,18 +164,34 @@ class PermintaanResource extends Resource
 
                         if ($statusLama === 'Disetujui' && $statusBaru !== 'Disetujui') {
                             foreach ($record->items as $item) {
-                                $barang = \App\Models\Barang::where('nama', $item->nama_barang)->first();
+                                $barang = Barang::where('nama', $item->nama_barang)->first();
                                 if ($barang) {
                                     $barang->increment('sisa', $item->jumlah);
+                                    LogBarangMasuk::create([
+                                        'kode_barang' => $barang->kode,
+                                        'unit_kerja_id' => $record->user->unit_id,
+                                        'jumlah' => $item->jumlah,
+                                        'keterangan' => 'Barang masuk!'
+                                    ]);
                                 }
                             }
                         }
 
                         if ($statusBaru === 'Disetujui' && $statusLama !== 'Disetujui') {
                             foreach ($record->items as $item) {
-                                $barang = \App\Models\Barang::where('nama', $item->nama_barang)->first();
+                                $barang = Barang::where('nama', $item->nama_barang)->first();
                                 if ($barang) {
+                                    $sisaSebelum = $barang->sisa;
                                     $barang->decrement('sisa', $item->jumlah);
+
+                                    LogBarangKeluar::create([
+                                        'kode_barang'       => $barang->kode,
+                                        'unit_kerja_id'     => $record->user->unit_id ?? null,
+                                        'jumlah'            => $item->jumlah,
+                                        'user_id'           => $record->user_id,
+                                        'sisa_stok_saat_itu'=> $sisaSebelum,
+                                        'keterangan'        => 'Barang keluar!',
+                                    ]);
                                 }
                             }
                         }

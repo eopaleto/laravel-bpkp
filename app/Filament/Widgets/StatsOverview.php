@@ -5,7 +5,10 @@ namespace App\Filament\Widgets;
 use App\Models\User;
 use App\Models\Barang;
 use App\Models\Kategori;
+use App\Models\LogBarangKeluar;
+use App\Models\LogBarangMasuk;
 use App\Models\Permintaan;
+use Illuminate\Support\Carbon;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 
@@ -17,15 +20,47 @@ class StatsOverview extends BaseWidget
         $alatTulis = Kategori::where('nama', 'Alat Tulis Kantor')->first();
         $alatKebersihan = Kategori::where('nama', 'Alat Kebersihan')->first();
 
+        $barangMasukTotal = LogBarangMasuk::sum('jumlah');
+        $barangMasukHariIni = LogBarangMasuk::whereDate('created_at', today())->sum('jumlah');
+        $barangMasukKemarin = LogBarangMasuk::whereDate('created_at', today()->subDay())->sum('jumlah');
+        $barangMasukIcon = $barangMasukHariIni >= $barangMasukKemarin
+            ? 'heroicon-m-arrow-trending-up'
+            : 'heroicon-m-arrow-trending-down';
+
+        $barangKeluarTotal = LogBarangKeluar::sum('jumlah');
+        $barangKeluarHariIni = LogBarangKeluar::whereDate('created_at', today())->sum('jumlah');
+        $barangKeluarKemarin = LogBarangKeluar::whereDate('created_at', today()->subDay())->sum('jumlah');
+        $barangKeluarIcon = $barangKeluarHariIni >= $barangKeluarKemarin
+            ? 'heroicon-m-arrow-trending-up'
+            : 'heroicon-m-arrow-trending-down';
+
+        // Grafik 7 hari terakhir
+        $barangMasukChart = collect(range(6, 0))->map(function ($daysAgo) {
+            return LogBarangMasuk::whereDate('created_at', Carbon::today()->subDays($daysAgo))->sum('jumlah');
+        })->toArray();
+
+        $barangKeluarChart = collect(range(6, 0))->map(function ($daysAgo) {
+            return LogBarangKeluar::whereDate('created_at', Carbon::today()->subDays($daysAgo))->sum('jumlah');
+        })->toArray();
+
         return [
-            Stat::make('Total Semua Users', User::count())
-                ->description('Pengguna Terdaftar')
-                ->icon('heroicon-o-users')
+            Stat::make('Total Barang', Barang::count())
+                ->description("Total Barang")
+                ->icon('heroicon-o-cube')
                 ->color('primary'),
-            Stat::make('Jumlah Users', User::role('User')->count())
-                ->description('Pengguna Dengan Role User')
-                ->icon('heroicon-o-users')
-                ->color('primary'),
+            Stat::make('Barang Masuk', $barangMasukTotal)
+                ->description("{$barangMasukHariIni} Barang masuk hari ini")
+                ->descriptionIcon($barangMasukIcon)
+                ->icon('heroicon-o-arrow-down-tray')
+                ->chart($barangMasukChart)
+                ->color('success'),
+
+            Stat::make('Barang Keluar', $barangKeluarTotal)
+                ->description("{$barangKeluarHariIni} Barang keluar hari ini")
+                ->descriptionIcon($barangKeluarIcon)
+                ->icon('heroicon-o-arrow-up-tray')
+                ->chart($barangKeluarChart)
+                ->color('warning'),
             Stat::make('Jumlah Admin', User::role('Admin')->count())
                 ->description('Pengguna Dengan Role Admin')
                 ->icon('heroicon-o-user-group')
@@ -42,10 +77,6 @@ class StatsOverview extends BaseWidget
                 ->description('Menunggu Persetujuan')
                 ->icon('heroicon-o-clock')
                 ->color('info'),
-            Stat::make('Total Barang', Barang::count())
-                ->description('Jumlah semua barang')
-                ->icon('heroicon-o-cube')
-                ->color('primary'),
             Stat::make('Alat Tulis Kantor', $alatTulis?->barangs()->count() ?? 0)
                 ->description('Jumlah barang kategori Alat Tulis Kantor')
                 ->icon('heroicon-o-pencil-square')

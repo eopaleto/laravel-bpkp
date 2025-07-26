@@ -2,23 +2,22 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
 use App\Models\Barang;
-use App\Models\Kategori;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use App\Imports\BarangImport;
 use Filament\Resources\Resource;
-use Filament\Forms\Components\Card;
-use Filament\Forms\Components\Grid;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -26,9 +25,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\BarangResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\BarangResource\RelationManagers;
-use App\Models\Permintaan;
 
 class BarangResource extends Resource
 {
@@ -133,6 +129,24 @@ class BarangResource extends Resource
                 TextColumn::make('sisa')->label('Sisa'),
                 TextColumn::make('hargajual')->label('Harga Jual')->money('IDR'),
                 TextColumn::make('expired')->label('Expired')->date(),
+            ])
+            ->headerActions([
+                Action::make('Import Excel')
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('Upload Excel (.xlsx)')
+                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        Excel::import(new BarangImport, $data['file']);
+                        Notification::make()
+                            ->title('Import berhasil!')
+                            ->success()
+                            ->send();
+                    })
+                    ->modalHeading('Impor Data Barang dari Excel')
+                    ->modalButton('Import'),
             ])
             ->filters([
                 SelectFilter::make('kategori_id')

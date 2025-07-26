@@ -9,9 +9,11 @@ use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Spatie\Permission\Models\Role;
+use Filament\Forms\Components\Grid;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,24 +32,41 @@ class UserResource extends Resource
     {
         return (string) User::count();
     }
-    
+
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->label('Nama'),
-            TextInput::make('email')->email()->required(),
-            TextInput::make('password')
-                ->password()
-                ->label('Password')
-                ->dehydrateStateUsing(fn($state) => !empty($state) ? Hash::make($state) : null)
-                ->dehydrated(fn($state) => filled($state))
-                ->required(fn(string $context) => $context === 'create'),
-            Select::make('roles')
-                ->label('Role')
-                ->relationship('roles', 'name')
-                ->preload()
-                ->required(),
-
+            Section::make('Informasi Pengguna')
+                ->schema([
+                    Grid::make(2)
+                        ->schema([
+                            TextInput::make('name')
+                                ->required()
+                                ->label('Nama Lengkap'),
+                            TextInput::make('email')
+                                ->email()
+                                ->required(),
+                            TextInput::make('password')
+                                ->password()
+                                ->label('Password')
+                                ->dehydrateStateUsing(fn($state) => !empty($state) ? Hash::make($state) : null)
+                                ->dehydrated(fn($state) => filled($state))
+                                ->required(fn(string $context) => $context === 'create'),
+                            Select::make('unit_id')
+                                ->label('Unit Kerja')
+                                ->relationship('unit', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                            Select::make('roles')
+                                ->label('Role Pengguna')
+                                ->relationship('roles', 'name')
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                        ]),
+                ])
+                ->columns(1),
         ]);
     }
 
@@ -57,6 +76,9 @@ class UserResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Nama')->searchable(),
                 TextColumn::make('email')->searchable(),
+                TextColumn::make('unit.name')
+                    ->label('Unit Kerja')
+                    ->searchable(),
                 TextColumn::make('roles.name')
                     ->label('Role')
                     ->badge()

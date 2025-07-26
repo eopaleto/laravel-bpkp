@@ -27,4 +27,9 @@ class PermintaanItems extends Model
     {
         return $this->belongsTo(Barang::class);
     }
+
+    public function unit()
+    {
+        return $this->belongsTo(UnitKerja::class);
+    }
 }

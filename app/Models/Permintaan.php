@@ -20,6 +20,10 @@ class Permintaan extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function unitKerja()
+    {
+        return $this->belongsTo(UnitKerja::class);
+    }
 
     public function TotalBarang()
     {
