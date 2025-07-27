@@ -76,20 +76,20 @@ class BarangResource extends Resource
                     TextInput::make('hargajual')->label('Harga Jual')->numeric()->required(),
                     TextInput::make('stokmin')->label('Stok Min')->numeric()->required(),
 
-                    TextInput::make('terbeli')->label('Terbeli')->numeric(),
-                    TextInput::make('terjual')->label('Terjual')->numeric(),
-                    TextInput::make('sisa')->label('Sisa')->numeric(),
+                    TextInput::make('terbeli')->label('Terbeli')->required()->numeric(),
+                    TextInput::make('terjual')->label('Terjual')->required()->numeric(),
+                    TextInput::make('sisa')->label('Sisa')->required()->numeric(),
                 ])
                 ->columns(3),
 
             Section::make('Spesifikasi & Detail Lainnya')
                 ->description('Warna, ukuran, brand, lokasi, dan deskripsi tambahan.')
                 ->schema([
-                    TextInput::make('warna')->label('Warna')->required()->maxLength(20),
-                    TextInput::make('ukuran')->label('Ukuran')->required()->maxLength(10),
-                    TextInput::make('lokasi')->label('Lokasi')->required()->maxLength(50),
+                    TextInput::make('warna')->label('Warna')->maxLength(20),
+                    TextInput::make('ukuran')->label('Ukuran')->maxLength(10),
+                    TextInput::make('lokasi')->label('Lokasi')->maxLength(50),
 
-                    TextInput::make('brand')->label('Brand')->required()->maxLength(100),
+                    TextInput::make('brand')->label('Brand')->maxLength(100),
                     TextInput::make('keterangan')->label('Keterangan')->maxLength(200)->columnSpan(2),
                 ])
                 ->columns(3),
@@ -105,7 +105,7 @@ class BarangResource extends Resource
                         ->maxSize(2048)
                         ->visibility('public'),
 
-                    DatePicker::make('expired')->label('Expired')->required(),
+                    DatePicker::make('expired')->label('Expired'),
                 ])
                 ->columns(2),
         ]);
