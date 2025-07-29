@@ -14,7 +14,7 @@
         <div class="space-y-4">
             @foreach ($items as $item)
                 <div class="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm">
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 flex-1">
                         <img src="{{ asset('storage/' . $item->barang->avatar) }}"
                             class="w-14 h-14 rounded-lg object-cover" />
                         <div>
@@ -24,7 +24,7 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center w-28 gap-2 justify-center self-center ">
                         <button wire:click="kurang({{ $item->id }})"
                             class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 text-xs font-bold flex items-center justify-center">
                             −
