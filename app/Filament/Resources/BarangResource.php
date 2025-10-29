@@ -102,7 +102,6 @@ class BarangResource extends Resource
                         ->directory('barang')
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->disk('public')
-                        ->maxSize(2048)
                         ->visibility('public'),
 
                     DatePicker::make('expired')->label('Expired'),
