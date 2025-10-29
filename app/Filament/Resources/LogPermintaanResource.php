@@ -45,10 +45,14 @@ class LogPermintaanResource extends Resource
                 TextColumn::make('status_lama')
                     ->label('Aktivitas')
                     ->alignCenter()
-                    ->formatStateUsing(
-                        fn($state, $record) =>
-                        "{$record->user->name} mengubah permintaan {$record->permintaan->user->name} dari {$record->status_lama} menjadi {$record->status_baru}"
-                    )
+                    ->formatStateUsing(function ($state, $record) {
+                        $userName = $record->user?->name ?? 'User tidak diketahui';
+                        $pemintaName = $record->permintaan?->user?->name ?? 'Pengguna tidak diketahui';
+                        $statusLama = $record->status_lama ?? '-';
+                        $statusBaru = $record->status_baru ?? '-';
+
+                        return "{$userName} mengubah permintaan {$pemintaName} dari {$statusLama} menjadi {$statusBaru}";
+                    })
                     ->extraAttributes([
                         'class' => 'text-sm text-gray-700',
                     ])
