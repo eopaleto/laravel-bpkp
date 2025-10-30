@@ -198,7 +198,6 @@ class BarangResource extends Resource
                 TextColumn::make('nama')->label('Nama Barang')->searchable(),
                 TextColumn::make('kategori.nama')
                     ->label('Kategori'),
-                TextColumn::make('stokmin')->label('Stok Min'),
                 TextColumn::make('sisa')->label('Sisa'),
                 TextColumn::make('hargajual')->label('Harga Jual')->money('IDR'),
                 TextColumn::make('expired')->label('Expired')->date(),
@@ -246,6 +245,7 @@ class BarangResource extends Resource
                     ),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()->color('success'),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()
                     ->visible(fn() => $isSuperAdmin),
@@ -284,6 +284,7 @@ class BarangResource extends Resource
         return [
             'index' => Pages\ListBarangs::route('/'),
             'create' => Pages\CreateBarang::route('/create'),
+            'view' => Pages\ViewBarang::route('/{record}'),
             'edit' => Pages\EditBarang::route('/{record}/edit'),
         ];
     }
