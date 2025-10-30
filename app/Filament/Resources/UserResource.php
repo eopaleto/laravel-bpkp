@@ -43,9 +43,10 @@ class UserResource extends Resource
                             TextInput::make('name')
                                 ->required()
                                 ->label('Nama Lengkap'),
-                            TextInput::make('email')
-                                ->email()
+                            TextInput::make('username')
                                 ->required(),
+                            TextInput::make('email')
+                                ->email(),
                             TextInput::make('password')
                                 ->password()
                                 ->label('Password')
@@ -75,6 +76,7 @@ class UserResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->label('Nama')->searchable(),
+                TextColumn::make('username')->label('Username')->searchable(),
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('unit.name')
                     ->label('Unit Kerja')

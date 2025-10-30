@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\CustomLogin;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\Widgets;
@@ -33,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('bpkp')
-            ->login()
+            ->login(CustomLogin::class)
             ->brandLogo(asset('img/logo-bpkp.png'))
             ->brandLogoHeight('50px')
             ->sidebarWidth('18rem')
