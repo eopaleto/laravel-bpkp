@@ -99,7 +99,7 @@ class UserResource extends Resource
         /** @var User|null $user */
         $user = Auth::user();
 
-        return $user?->hasRole('Admin');
+        return $user?->hasRole('SuperAdmin');
     }
 
     public static function getRelations(): array

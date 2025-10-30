@@ -94,6 +94,6 @@ class LogPermintaanResource extends Resource
         /** @var User|null $user */
         $user = Auth::user();
 
-        return $user?->hasRole('Admin');
+        return $user?->hasRole('SuperAdmin');
     }
 }

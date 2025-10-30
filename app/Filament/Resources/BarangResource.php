@@ -44,53 +44,120 @@ class BarangResource extends Resource
 
     public static function form(Form $form): Form
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        $isAdmin = $user?->hasRole('Admin');
+        $isSuperAdmin = $user?->hasRole('SuperAdmin');
+
         return $form->schema([
             Section::make('Informasi Produk')
                 ->description('Data utama produk seperti nama, kode, kategori, dan satuan.')
                 ->schema([
-                    TextInput::make('nama')->label('Nama Barang')->maxLength(200)->required(),
+                    TextInput::make('nama')
+                        ->label('Nama Barang')
+                        ->maxLength(200)
+                        ->required()
+                        ->disabled($isAdmin),
+                    
                     TextInput::make('kode')
                         ->label('Kode')
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(20)
+                        ->disabled($isAdmin)
                         ->validationMessages([
                             'unique' => 'Kode barang ini sudah digunakan!',
                         ]),
-                    TextInput::make('sku')->label('SKU')->required()->maxLength(20),
+                    
+                    TextInput::make('sku')
+                        ->label('SKU')
+                        ->required()
+                        ->maxLength(20)
+                        ->disabled($isAdmin),
 
                     Select::make('kategori_id')
                         ->label('Kategori')
                         ->relationship('kategori', 'nama')
-                        ->required(),
+                        ->required()
+                        ->disabled($isAdmin),
 
-                    TextInput::make('satuan')->label('Satuan')->required()->maxLength(20),
-                    TextInput::make('barcode')->label('Barcode')->required()->maxLength(50),
+                    TextInput::make('satuan')
+                        ->label('Satuan')
+                        ->required()
+                        ->maxLength(20)
+                        ->disabled($isAdmin),
+                    
+                    TextInput::make('barcode')
+                        ->label('Barcode')
+                        ->required()
+                        ->maxLength(50)
+                        ->disabled($isAdmin),
                 ])
                 ->columns(3),
 
             Section::make('Harga & Stok')
                 ->description('Data pembelian, penjualan, dan stok barang.')
                 ->schema([
-                    TextInput::make('hargabeli')->label('Harga Beli')->numeric()->required(),
-                    TextInput::make('hargajual')->label('Harga Jual')->numeric()->required(),
-                    TextInput::make('stokmin')->label('Stok Min')->numeric()->required(),
+                    TextInput::make('hargabeli')
+                        ->label('Harga Beli')
+                        ->numeric()
+                        ->required(),
+                    
+                    TextInput::make('hargajual')
+                        ->label('Harga Jual')
+                        ->numeric()
+                        ->required(),
+                    
+                    TextInput::make('stokmin')
+                        ->label('Stok Min')
+                        ->numeric()
+                        ->required(),
 
-                    TextInput::make('terbeli')->label('Terbeli')->required()->numeric(),
-                    TextInput::make('terjual')->label('Terjual')->required()->numeric(),
-                    TextInput::make('sisa')->label('Sisa')->required()->numeric(),
+                    TextInput::make('terbeli')
+                        ->label('Terbeli')
+                        ->required()
+                        ->numeric(),
+                    
+                    TextInput::make('terjual')
+                        ->label('Terjual')
+                        ->required()
+                        ->numeric(),
+                    
+                    TextInput::make('sisa')
+                        ->label('Sisa')
+                        ->required()
+                        ->numeric(),
                 ])
                 ->columns(3),
 
             Section::make('Spesifikasi & Detail Lainnya')
                 ->description('Warna, ukuran, brand, lokasi, dan deskripsi tambahan.')
                 ->schema([
-                    TextInput::make('warna')->label('Warna')->maxLength(20),
-                    TextInput::make('ukuran')->label('Ukuran')->maxLength(10),
-                    TextInput::make('lokasi')->label('Lokasi')->maxLength(50),
+                    TextInput::make('warna')
+                        ->label('Warna')
+                        ->maxLength(20)
+                        ->disabled($isAdmin),
+                    
+                    TextInput::make('ukuran')
+                        ->label('Ukuran')
+                        ->maxLength(10)
+                        ->disabled($isAdmin),
+                    
+                    TextInput::make('lokasi')
+                        ->label('Lokasi')
+                        ->maxLength(50)
+                        ->disabled($isAdmin),
 
-                    TextInput::make('brand')->label('Brand')->maxLength(100),
-                    TextInput::make('keterangan')->label('Keterangan')->maxLength(200)->columnSpan(2),
+                    TextInput::make('brand')
+                        ->label('Brand')
+                        ->maxLength(100)
+                        ->disabled($isAdmin),
+                    
+                    TextInput::make('keterangan')
+                        ->label('Keterangan')
+                        ->maxLength(200)
+                        ->columnSpan(2)
+                        ->disabled($isAdmin),
                 ])
                 ->columns(3),
 
@@ -102,9 +169,12 @@ class BarangResource extends Resource
                         ->directory('barang')
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->disk('public')
-                        ->visibility('public'),
+                        ->visibility('public')
+                        ->disabled($isAdmin),
 
-                    DatePicker::make('expired')->label('Expired'),
+                    DatePicker::make('expired')
+                        ->label('Expired')
+                        ->disabled($isAdmin),
                 ])
                 ->columns(2),
         ]);
@@ -112,6 +182,10 @@ class BarangResource extends Resource
 
     public static function table(Table $table): Table
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        $isSuperAdmin = $user?->hasRole('SuperAdmin');
+
         return $table
             ->columns([
                 ImageColumn::make('avatar')
@@ -129,24 +203,26 @@ class BarangResource extends Resource
                 TextColumn::make('hargajual')->label('Harga Jual')->money('IDR'),
                 TextColumn::make('expired')->label('Expired')->date(),
             ])
-            ->headerActions([
-                Action::make('Import Excel')
-                    ->form([
-                        FileUpload::make('file')
-                            ->label('Upload Excel (.xlsx)')
-                            ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
-                            ->required(),
-                    ])
-                    ->action(function (array $data) {
-                        Excel::import(new BarangImport, $data['file']);
-                        Notification::make()
-                            ->title('Import berhasil!')
-                            ->success()
-                            ->send();
-                    })
-                    ->modalHeading('Impor Data Barang dari Excel')
-                    ->modalButton('Import'),
-            ])
+            ->headerActions(
+                $isSuperAdmin ? [
+                    Action::make('Import Excel')
+                        ->form([
+                            FileUpload::make('file')
+                                ->label('Upload Excel (.xlsx)')
+                                ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+                                ->required(),
+                        ])
+                        ->action(function (array $data) {
+                            Excel::import(new BarangImport, $data['file']);
+                            Notification::make()
+                                ->title('Import berhasil!')
+                                ->success()
+                                ->send();
+                        })
+                        ->modalHeading('Impor Data Barang dari Excel')
+                        ->modalButton('Import'),
+                ] : []
+            )
             ->filters([
                 SelectFilter::make('kategori_id')
                     ->label('Kategori')
@@ -171,11 +247,21 @@ class BarangResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn() => $isSuperAdmin),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-            ]);
+            ->bulkActions(
+                $isSuperAdmin ? [
+                    Tables\Actions\DeleteBulkAction::make(),
+                ] : []
+            );
+    }
+
+    public static function canCreate(): bool
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        return $user?->hasRole('SuperAdmin') ?? false;
     }
 
     public static function canAccess(): bool
@@ -183,7 +269,7 @@ class BarangResource extends Resource
         /** @var User|null $user */
         $user = Auth::user();
 
-        return $user?->hasRole('Admin');
+        return $user?->hasRole(['SuperAdmin', 'Admin']);
     }
 
     public static function getRelations(): array

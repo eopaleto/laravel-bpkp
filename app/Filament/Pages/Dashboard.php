@@ -19,7 +19,7 @@ class Dashboard extends Page
         /** @var User|null $user */
         $user = Auth::user();
 
-        return $user?->hasRole('Admin');
+        return $user?->hasRole('SuperAdmin');
     }
 
     protected function getHeaderWidgets(): array
