@@ -84,6 +84,7 @@ class UserResource extends Resource
                     ->badge()
                     ->searchable()
                     ->color(fn(string $state) => match ($state) {
+                        'SuperAdmin' => 'danger',
                         'Admin' => 'success',
                         'User' => 'primary',
                     })
