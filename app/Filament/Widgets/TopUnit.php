@@ -3,11 +3,11 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Permintaan;
-use Filament\Widgets\ChartWidget;
+use Filament\Widgets\Widget;
 
-class TopUnit extends ChartWidget
+class TopUnit extends Widget
 {
-    protected static ?string $heading = '🏢 Top 5 Unit Kerja Paling Sering Meminta';
+    protected static string $view = 'filament.widgets.top-unit';
     protected static ?string $pollingInterval = '60s';
 
     public function getColumnSpan(): int|string|array
@@ -15,12 +15,13 @@ class TopUnit extends ChartWidget
         return [
             'default' => 12,
             'sm' => 12,
-            'md' => 12,
-            'lg' => 10,
+            'md' => 6,
+            'lg' => 6,
+            'xl' => 6,
         ];
     }
 
-    protected function getData(): array
+    public function getTopUnits(): array
     {
         $data = Permintaan::with('user.unit')
             ->get()
@@ -29,94 +30,34 @@ class TopUnit extends ChartWidget
             ->sortDesc()
             ->take(5);
 
-        // 🔹 Singkat label jika terlalu panjang
-        $labels = $data->keys()->map(function ($label) {
-            $words = explode(' ', $label);
-            return count($words) > 3
-                ? implode(' ', array_slice($words, 0, 3)) . '...'
-                : $label;
-        });
-
-        $values = $data->values();
-
-        return [
-            'datasets' => [
-                [
-                    'label' => 'Jumlah Permintaan',
-                    'data' => $values,
-                    'backgroundColor' => [
-                        '#0284c7', // sky-600
-                        '#0ea5e9', // sky-500
-                        '#38bdf8', // sky-400
-                        '#7dd3fc', // sky-300
-                        '#bae6fd', // sky-200
-                    ],
-                    'borderWidth' => 0,
-                    'borderRadius' => 6,
-                    'barThickness' => 20,
-                    'maxBarThickness' => 30,
-                ],
-            ],
-            'labels' => $labels,
-        ];
+        return $data->map(fn($count, $unitName) => [
+            'nama' => $unitName,
+            'nama_pendek' => $this->shortenUnitName($unitName),
+            'jumlah' => $count,
+        ])->values()->map(fn($item, $index) => [
+            'rank' => $index + 1,
+            'nama' => $item['nama'],
+            'nama_pendek' => $item['nama_pendek'],
+            'jumlah' => $item['jumlah'],
+        ])->toArray();
     }
 
-    protected function getType(): string
+    private function shortenUnitName(string $name): string
     {
-        return 'bar';
-    }
+        if (strlen($name) <= 75) {
+            return $name;
+        }
 
-    protected function getOptions(): array
-    {
-        return [
-            'indexAxis' => 'y',
-            'responsive' => true,
-            'maintainAspectRatio' => false,
-            'animation' => [
-                'duration' => 400,
-                'easing' => 'easeOutQuart',
-            ],
-            'interaction' => [
-                'mode' => 'nearest',
-                'intersect' => false,
-                'axis' => 'y',
-            ],
-            'hover' => [
-                'mode' => 'nearest',
-                'intersect' => false,
-                'animationDuration' => 300,
-            ],
-            'plugins' => [
-                'legend' => ['display' => false],
-                'tooltip' => [
-                    'enabled' => true,
-                    'mode' => 'nearest',
-                    'intersect' => false,
-                ],
-            ],
-            'scales' => [
-                'x' => [
-                    'beginAtZero' => true,
-                    'grid' => [
-                        'display' => false
-                    ],
-                    'ticks' => [
-                        'stepSize' => 2,
-                        'maxTicksLimit' => 6,
-                        'font' => [
-                            'size' => 12,
-                        ],
-                    ],
-                ],
-                'y' => [
-                    'grid' => ['display' => false],
-                    'ticks' => [
-                        'font' => ['size' => 13, 'weight' => '600'],
-                        'maxRotation' => 0,
-                        'autoSkip' => false,
-                    ],
-                ],
-            ],
-        ];
+        $words = explode(' ', $name);
+        $shortened = '';
+
+        foreach ($words as $word) {
+            if (strlen($shortened . ' ' . $word) > 75) {
+                break;
+            }
+            $shortened .= ($shortened ? ' ' : '') . $word;
+        }
+
+        return $shortened . '...';
     }
 }
