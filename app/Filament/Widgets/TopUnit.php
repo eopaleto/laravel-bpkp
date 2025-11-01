@@ -24,6 +24,7 @@ class TopUnit extends Widget
     public function getTopUnits(): array
     {
         $data = Permintaan::with('user.unit')
+            ->where('status', 'Disetujui')
             ->get()
             ->groupBy(fn($p) => $p->user?->unit?->name ?? 'Tidak diketahui')
             ->map(fn($items) => $items->count())
