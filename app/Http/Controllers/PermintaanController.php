@@ -17,7 +17,7 @@ class PermintaanController extends Controller
             abort(403, 'Permintaan belum Disetujui.');
         }
 
-        if (auth()->id() !== $permintaan->user_id && !auth()->user()->hasRole('Admin')) {
+        if (auth()->id() !== $permintaan->user_id && !auth()->user()->hasRole('User')) {
             abort(403);
         }
 
