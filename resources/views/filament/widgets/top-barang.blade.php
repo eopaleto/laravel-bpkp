@@ -11,16 +11,16 @@
             <div class="space-y-2">
                 @foreach($this->getTopItems() as $item)
                     <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                        <div class="flex items-center gap-3 flex-1">
-                            <div class="flex items-center justify-center w-8 h-8 rounded-full 
-                                {{ $item['rank'] === 1 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : '' }}
-                                {{ $item['rank'] === 2 ? 'bg-green-50 text-green-600 dark:bg-green-900/50 dark:text-green-400' : '' }}
-                                {{ $item['rank'] === 3 ? 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400' : '' }}
-                                {{ $item['rank'] > 3 ? 'bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-500' : '' }}
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0
+                                {{ $item['rank'] === 1 ? 'text-gray-500 dark:text-white' : '' }}
+                                {{ $item['rank'] === 2 ? 'text-gray-500 dark:text-white' : '' }}
+                                {{ $item['rank'] === 3 ? 'text-gray-500 dark:text-white' : '' }}
+                                {{ $item['rank'] > 3 ? 'text-gray-500 dark:text-white' : '' }}
                                 font-bold text-sm">
                                 {{ $item['rank'] }}
                             </div>
-                            <span class="font-medium text-gray-700 dark:text-gray-300 truncate">
+                            <span class="font-medium me-4 text-gray-700 dark:text-white truncate" title="{{ $item['nama'] }}">
                                 {{ $item['nama'] }}
                             </span>
                         </div>
