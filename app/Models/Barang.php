@@ -28,7 +28,6 @@ class Barang extends Model
         'lokasi',
         'expired',
         'warna',
-        'ukuran',
         'avatar',
     ];
 

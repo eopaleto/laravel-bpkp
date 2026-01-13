@@ -34,7 +34,6 @@ class BarangImport implements ToModel, WithHeadingRow
             'lokasi'      => $row['lokasi'] ?? null,
             'expired'     => $row['expired'] ?? null,
             'warna'       => $row['warna'] ?? null,
-            'ukuran'      => $row['ukuran'] ?? null,
             'avatar'      => $row['avatar'] ?? null,
         ]);
     }

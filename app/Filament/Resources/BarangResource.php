@@ -131,16 +131,11 @@ class BarangResource extends Resource
                 ->columns(3),
 
             Section::make('Spesifikasi & Detail Lainnya')
-                ->description('Warna, ukuran, brand, lokasi, dan deskripsi tambahan.')
+                ->description('Warna, brand, lokasi, dan deskripsi tambahan.')
                 ->schema([
                     TextInput::make('warna')
                         ->label('Warna')
                         ->maxLength(20)
-                        ->disabled($isAdmin),
-                    
-                    TextInput::make('ukuran')
-                        ->label('Ukuran')
-                        ->maxLength(10)
                         ->disabled($isAdmin),
                     
                     TextInput::make('lokasi')
