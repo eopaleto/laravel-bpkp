@@ -24,6 +24,8 @@ class KeranjangBelanja extends Component
     {
         $this->items = KeranjangBarang::with('barang')
             ->where('user_id', Auth::id())
+            ->where('periode_tahun', session('periode_tahun') ?? auth()->user()->periode_tahun)
+            ->whereHas('barang')  // Hanya ambil yang masih punya barang
             ->get();
 
         $this->total = $this->items->sum(fn($item) => $item->jumlah * ($item->barang->hargajual ?? 0));
@@ -68,7 +70,11 @@ class KeranjangBelanja extends Component
             return redirect()->route('login');
         }
 
-        $items = KeranjangBarang::with('barang')->where('user_id', Auth::id())->get();
+        $items = KeranjangBarang::with('barang')
+            ->where('user_id', Auth::id())
+            ->where('periode_tahun', session('periode_tahun') ?? auth()->user()->periode_tahun)
+            ->whereHas('barang')  // Hanya ambil yang masih punya barang
+            ->get();
 
         if ($items->isEmpty()) {
             Notification::make()
@@ -81,7 +87,9 @@ class KeranjangBelanja extends Component
         $total = 0;
 
         foreach ($items as $item) {
-            $total += $item->jumlah * $item->barang->hargajual;
+            if ($item->barang) {  // Safety check
+                $total += $item->jumlah * $item->barang->hargajual;
+            }
         }
 
         $permintaan = Permintaan::create([
@@ -91,13 +99,15 @@ class KeranjangBelanja extends Component
         ]);
 
         foreach ($items as $item) {
-            PermintaanItems::create([
-                'permintaan_checkout_id' => $permintaan->id,
-                'nama_barang' => $item->barang->nama,
-                'jumlah' => $item->jumlah,
-                'harga_satuan' => $item->barang->hargajual,
-                'subtotal' => $item->jumlah * $item->barang->hargajual,
-            ]);
+            if ($item->barang) {  // Safety check
+                PermintaanItems::create([
+                    'permintaan_checkout_id' => $permintaan->id,
+                    'nama_barang' => $item->barang->nama,
+                    'jumlah' => $item->jumlah,
+                    'harga_satuan' => $item->barang->hargajual,
+                    'subtotal' => $item->jumlah * $item->barang->hargajual,
+                ]);
+            }
         }
 
         KeranjangBarang::where('user_id', Auth::id())->delete();

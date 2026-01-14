@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\FilterByPeriodeTahun;
 
 class PermintaanItems extends Model
 {
-    use HasFactory;
+    use HasFactory, FilterByPeriodeTahun;
 
     protected $table = 'permintaan_checkout_items';
     protected $fillable = [
@@ -16,6 +17,7 @@ class PermintaanItems extends Model
         'jumlah',
         'harga_satuan',
         'subtotal',
+        'periode_tahun',
     ];
 
     public function permintaan()

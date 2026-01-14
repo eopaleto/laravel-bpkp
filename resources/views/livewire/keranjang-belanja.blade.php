@@ -14,6 +14,7 @@
     @else
         <div class="space-y-4">
             @foreach ($items as $item)
+                @if ($item->barang)
                 <div
                     class="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <!-- Product Info -->
@@ -35,6 +36,9 @@
                             </h3>
                             <p class="text-xs text-gray-500 dark:text-white mt-0.5 truncate">
                                 Rp{{ number_format($item->barang->hargajual, 0, ',', '.') }}
+                            </p>
+                            <p class="text-xs text-gray-400 dark:text-gray-400 mt-1">
+                                Periode: {{ $item->periode_tahun ?? '-' }}
                             </p>
                         </div>
                     </div>
@@ -64,6 +68,7 @@
                         </button>
                     </div>
                 </div>
+                @endif
             @endforeach
         </div>
 

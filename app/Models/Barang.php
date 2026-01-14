@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\FilterByPeriodeTahun;
 
 class Barang extends Model
 {
+    use FilterByPeriodeTahun;
+    
     protected $table = 'barang';
     protected $primaryKey = 'kode';
     public $incrementing = false;
@@ -29,6 +32,7 @@ class Barang extends Model
         'expired',
         'warna',
         'avatar',
+        'periode_tahun',
     ];
 
     public function kategori()

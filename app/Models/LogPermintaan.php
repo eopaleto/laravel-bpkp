@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\FilterByPeriodeTahun;
 
 class LogPermintaan extends Model
 {
-    use HasFactory;
+    use HasFactory, FilterByPeriodeTahun;
 
     protected $table = 'log_permintaan';
 
@@ -17,6 +18,7 @@ class LogPermintaan extends Model
         'status_baru',
         'user_id',
         'keterangan',
+        'periode_tahun',
     ];
 
     public function user()

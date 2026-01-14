@@ -20,6 +20,7 @@ class Keranjang extends Page
     {
         $this->items = KeranjangBarang::with('barang')
             ->where('user_id', Auth::id())
+            ->where('periode_tahun', session('periode_tahun') ?? auth()->user()->periode_tahun)
             ->get();
 
         $this->total = $this->items->sum(fn($item) => $item->jumlah * ($item->barang->hargajual ?? 0));
@@ -27,7 +28,9 @@ class Keranjang extends Page
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) KeranjangBarang::where('user_id', Auth::id())->count();
+        return (string) KeranjangBarang::where('user_id', Auth::id())
+            ->where('periode_tahun', session('periode_tahun') ?? auth()->user()->periode_tahun)
+            ->count();
     }
 
     public static function canAccess(): bool

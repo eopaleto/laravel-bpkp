@@ -4,16 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\FilterByPeriodeTahun;
 
 class Permintaan extends Model
 {
-    use HasFactory;
+    use HasFactory, FilterByPeriodeTahun;
 
     protected $table = 'permintaan_checkout';
     protected $fillable = [
         'user_id',
         'total',
         'status',
+        'periode_tahun',
     ];
 
     public function user()

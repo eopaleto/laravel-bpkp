@@ -28,9 +28,11 @@ class DaftarProdukList extends Component
     public function addToCart($kode)
     {
         $userId = Auth::id();
+        $periodeTahun = session('periode_tahun') ?? auth()->user()->periode_tahun;
 
         $existing = KeranjangBarang::where('user_id', $userId)
             ->where('kode', $kode)
+            ->where('periode_tahun', $periodeTahun)
             ->first();
 
         if ($existing) {
@@ -40,6 +42,7 @@ class DaftarProdukList extends Component
                 'user_id' => $userId,
                 'kode' => $kode,
                 'jumlah' => 1,
+                'periode_tahun' => $periodeTahun,
             ]);
         }
 
