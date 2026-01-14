@@ -25,7 +25,7 @@ class KeranjangBelanja extends Component
         $this->items = KeranjangBarang::with('barang')
             ->where('user_id', Auth::id())
             ->where('periode_tahun', session('periode_tahun') ?? auth()->user()->periode_tahun)
-            ->whereHas('barang')  // Hanya ambil yang masih punya barang
+            ->whereHas('barang')
             ->get();
 
         $this->total = $this->items->sum(fn($item) => $item->jumlah * ($item->barang->hargajual ?? 0));
@@ -70,10 +70,12 @@ class KeranjangBelanja extends Component
             return redirect()->route('login');
         }
 
+        $periodeUser = session('periode_tahun') ?? auth()->user()->periode_tahun;
+
         $items = KeranjangBarang::with('barang')
             ->where('user_id', Auth::id())
-            ->where('periode_tahun', session('periode_tahun') ?? auth()->user()->periode_tahun)
-            ->whereHas('barang')  // Hanya ambil yang masih punya barang
+            ->where('periode_tahun', $periodeUser)
+            ->whereHas('barang')
             ->get();
 
         if ($items->isEmpty()) {
@@ -96,6 +98,7 @@ class KeranjangBelanja extends Component
             'user_id' => Auth::id(),
             'total' => $total,
             'status' => 'Menunggu',
+            'periode_tahun' => $periodeUser,
         ]);
 
         foreach ($items as $item) {
@@ -106,11 +109,14 @@ class KeranjangBelanja extends Component
                     'jumlah' => $item->jumlah,
                     'harga_satuan' => $item->barang->hargajual,
                     'subtotal' => $item->jumlah * $item->barang->hargajual,
+                    'periode_tahun' => $periodeUser,
                 ]);
             }
         }
 
-        KeranjangBarang::where('user_id', Auth::id())->delete();
+        KeranjangBarang::where('user_id', Auth::id())
+            ->where('periode_tahun', $periodeUser)
+            ->delete();
 
         Notification::make()
             ->title('Checkout berhasil')

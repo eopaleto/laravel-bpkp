@@ -98,6 +98,7 @@ class PermintaanResource extends Resource
             ->actions([
                 Action::make('download_pdf')
                     ->label('Unduh PDF')
+                    ->color('danger')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->url(fn($record) => route('permintaan.pdf', $record))
                     ->openUrlInNewTab()
@@ -164,14 +165,17 @@ class PermintaanResource extends Resource
 
                         if ($statusLama === 'Disetujui' && $statusBaru !== 'Disetujui') {
                             foreach ($record->items as $item) {
-                                $barang = Barang::where('nama', $item->nama_barang)->first();
+                                $barang = Barang::where('nama', $item->nama_barang)
+                                    ->where('periode_tahun', $record->periode_tahun)
+                                    ->first();
                                 if ($barang) {
                                     $barang->increment('sisa', $item->jumlah);
                                     LogBarangMasuk::create([
                                         'kode_barang' => $barang->kode,
                                         'unit_kerja_id' => $record->user->unit_id,
                                         'jumlah' => $item->jumlah,
-                                        'keterangan' => 'Barang masuk!'
+                                        'keterangan' => 'Barang masuk!',
+                                        'periode_tahun' => $record->periode_tahun,
                                     ]);
                                 }
                             }
@@ -179,7 +183,9 @@ class PermintaanResource extends Resource
 
                         if ($statusBaru === 'Disetujui' && $statusLama !== 'Disetujui') {
                             foreach ($record->items as $item) {
-                                $barang = Barang::where('nama', $item->nama_barang)->first();
+                                $barang = Barang::where('nama', $item->nama_barang)
+                                    ->where('periode_tahun', $record->periode_tahun)
+                                    ->first();
                                 if ($barang) {
                                     $sisaSebelum = $barang->sisa;
                                     $barang->decrement('sisa', $item->jumlah);
@@ -191,6 +197,7 @@ class PermintaanResource extends Resource
                                         'user_id'           => $record->user_id,
                                         'sisa_stok_saat_itu'=> $sisaSebelum,
                                         'keterangan'        => 'Barang keluar!',
+                                        'periode_tahun'     => $record->periode_tahun,
                                     ]);
                                 }
                             }
@@ -206,6 +213,7 @@ class PermintaanResource extends Resource
                             'status_baru' => $statusBaru,
                             'user_id' => Auth::id(),
                             'keterangan' => 'Status diubah via halaman admin.',
+                            'periode_tahun' => $record->periode_tahun,
                         ]);
 
                         Notification::make()

@@ -2,8 +2,11 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @if ($items->isEmpty())
         <div
-            class="flex flex-col items-center justify-center py-40 text-center space-y-4 bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700">
-            <x-heroicon-o-shopping-cart class="w-14 h-14 text-gray-400 dark:text-gray-500" />
+            class="flex flex-col items-center justify-center py-40 text-center space-y-4 bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700"
+            wire:loading.class="opacity-50" wire:target="*">
+            <div class="w-14 h-14 flex items-center justify-center">
+                <x-heroicon-o-shopping-cart class="w-14 h-14 text-gray-400 dark:text-gray-500" />
+            </div>
             <p class="text-lg font-semibold text-gray-700 dark:text-gray-200">Keranjang masih kosong nih ☹</p>
             <p class="text-sm text-gray-500 dark:text-gray-400">Yuk, mulai pilih produk pilihanmu sekarang!</p>
             <a href="{{ route('filament.admin.pages.daftar-produk') }}"

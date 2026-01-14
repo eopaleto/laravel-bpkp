@@ -23,6 +23,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use Filament\Tables\Filters\TernaryFilter;
 use App\Filament\Resources\BarangResource\Pages;
 
@@ -58,17 +59,13 @@ class BarangResource extends Resource
                         ->maxLength(200)
                         ->required()
                         ->disabled($isAdmin),
-                    
+
                     TextInput::make('kode')
                         ->label('Kode')
                         ->required()
-                        ->unique(ignoreRecord: true)
                         ->maxLength(20)
-                        ->disabled($isAdmin)
-                        ->validationMessages([
-                            'unique' => 'Kode barang ini sudah digunakan!',
-                        ]),
-                    
+                        ->disabled($isAdmin),
+
                     TextInput::make('sku')
                         ->label('SKU')
                         ->required()
@@ -86,7 +83,7 @@ class BarangResource extends Resource
                         ->required()
                         ->maxLength(20)
                         ->disabled($isAdmin),
-                    
+
                     TextInput::make('barcode')
                         ->label('Barcode')
                         ->required()
@@ -102,12 +99,12 @@ class BarangResource extends Resource
                         ->label('Harga Beli')
                         ->numeric()
                         ->required(),
-                    
+
                     TextInput::make('hargajual')
                         ->label('Harga Jual')
                         ->numeric()
                         ->required(),
-                    
+
                     TextInput::make('stokmin')
                         ->label('Stok Min')
                         ->numeric()
@@ -117,12 +114,12 @@ class BarangResource extends Resource
                         ->label('Terbeli')
                         ->required()
                         ->numeric(),
-                    
+
                     TextInput::make('terjual')
                         ->label('Terjual')
                         ->required()
                         ->numeric(),
-                    
+
                     TextInput::make('sisa')
                         ->label('Sisa')
                         ->required()
@@ -137,12 +134,12 @@ class BarangResource extends Resource
                         ->label('Warna')
                         ->maxLength(20)
                         ->disabled($isAdmin),
-                    
+
                     TextInput::make('ukuran')
                         ->label('Ukuran')
                         ->maxLength(10)
                         ->disabled($isAdmin),
-                    
+
                     TextInput::make('lokasi')
                         ->label('Lokasi')
                         ->maxLength(50)
@@ -152,7 +149,7 @@ class BarangResource extends Resource
                         ->label('Brand')
                         ->maxLength(100)
                         ->disabled($isAdmin),
-                    
+
                     TextInput::make('keterangan')
                         ->label('Keterangan')
                         ->maxLength(200)

@@ -39,4 +39,12 @@ class Barang extends Model
     {
         return $this->belongsTo(Kategori::class);
     }
+
+    public function delete()
+    {
+        // Delete hanya record dengan kode dan periode_tahun yang sama
+        return $this->where('kode', $this->kode)
+            ->where('periode_tahun', $this->periode_tahun)
+            ->delete();
+    }
 }
