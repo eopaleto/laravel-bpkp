@@ -17,7 +17,7 @@ class Barang extends Model
         'hargabeli',
         'hargajual',
         'keterangan',
-        'kategori',
+        'kategori_id',
         'satuan',
         'terjual',
         'terbeli',
