@@ -9,7 +9,7 @@
             </div>
 
             <div class="space-y-2">
-                @foreach($this->getTopItems() as $item)
+                @forelse($this->getTopItems() as $item)
                     <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             <div class="flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0
@@ -33,7 +33,13 @@
                             </span>
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="flex flex-col items-center justify-center py-8">
+                        <p class="text-gray-500 dark:text-gray-400 text-sm font-medium text-center">
+                            Belum ada data untuk saat ini
+                        </p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </x-filament::section>

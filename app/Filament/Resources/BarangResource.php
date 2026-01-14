@@ -131,11 +131,16 @@ class BarangResource extends Resource
                 ->columns(3),
 
             Section::make('Spesifikasi & Detail Lainnya')
-                ->description('Warna, brand, lokasi, dan deskripsi tambahan.')
+                ->description('Warna, ukuran, brand, lokasi, dan deskripsi tambahan.')
                 ->schema([
                     TextInput::make('warna')
                         ->label('Warna')
                         ->maxLength(20)
+                        ->disabled($isAdmin),
+                    
+                    TextInput::make('ukuran')
+                        ->label('Ukuran')
+                        ->maxLength(10)
                         ->disabled($isAdmin),
                     
                     TextInput::make('lokasi')
@@ -189,13 +194,13 @@ class BarangResource extends Resource
                     ->circular()
                     ->size(50),
                 TextColumn::make('kode')->label('Kode')->searchable()->sortable(),
-                TextColumn::make('sku')->label('SKU')->searchable()->sortable(),
+                // TextColumn::make('sku')->label('SKU')->searchable()->sortable(),
                 TextColumn::make('nama')->label('Nama Barang')->searchable(),
                 TextColumn::make('kategori.nama')
                     ->label('Kategori'),
                 TextColumn::make('sisa')->label('Sisa'),
                 TextColumn::make('hargajual')->label('Harga Jual')->money('IDR'),
-                TextColumn::make('expired')->label('Expired')->date(),
+                // TextColumn::make('expired')->label('Expired')->date(),
             ])
             ->headerActions(
                 $isSuperAdmin ? [
