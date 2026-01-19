@@ -41,8 +41,10 @@ class CreateBarang extends CreateRecord
 
     protected function afterCreate(): void
     {
+        $user = Auth::user();
         LogBarangMasuk::create([
             'kode_barang' => $this->record->kode,
+            'unit_kerja_id' => $user?->unit_id,
             'jumlah' => $this->record->sisa ?? 0,
             'keterangan' => 'Barang baru ditambahkan!',
             'periode_tahun' => $this->getPeriodeTahun(),

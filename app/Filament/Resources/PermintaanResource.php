@@ -162,6 +162,7 @@ class PermintaanResource extends Resource
                     ->action(function (array $data, $record): void {
                         $statusLama = $record->status;
                         $statusBaru = $data['status'];
+                        $currentUser = Auth::user();
 
                         if ($statusLama === 'Disetujui' && $statusBaru !== 'Disetujui') {
                             foreach ($record->items as $item) {
@@ -172,7 +173,7 @@ class PermintaanResource extends Resource
                                     $barang->increment('sisa', $item->jumlah);
                                     LogBarangMasuk::create([
                                         'kode_barang' => $barang->kode,
-                                        'unit_kerja_id' => $record->user->unit_id,
+                                        'unit_kerja_id' => $currentUser?->unit_id ?? $record->user->unit_id,
                                         'jumlah' => $item->jumlah,
                                         'keterangan' => 'Barang masuk!',
                                         'periode_tahun' => $record->periode_tahun,
@@ -192,7 +193,7 @@ class PermintaanResource extends Resource
 
                                     LogBarangKeluar::create([
                                         'kode_barang'       => $barang->kode,
-                                        'unit_kerja_id'     => $record->user->unit_id ?? null,
+                                        'unit_kerja_id'     => $currentUser?->unit_id ?? $record->user->unit_id,
                                         'jumlah'            => $item->jumlah,
                                         'user_id'           => $record->user_id,
                                         'sisa_stok_saat_itu'=> $sisaSebelum,
