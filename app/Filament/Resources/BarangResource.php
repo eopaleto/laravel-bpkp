@@ -97,32 +97,26 @@ class BarangResource extends Resource
                 ->schema([
                     TextInput::make('hargabeli')
                         ->label('Harga Beli')
-                        ->numeric()
-                        ->required(),
+                        ->numeric(),
 
                     TextInput::make('hargajual')
                         ->label('Harga Jual')
-                        ->numeric()
-                        ->required(),
+                        ->numeric(),
 
                     TextInput::make('stokmin')
                         ->label('Stok Min')
-                        ->numeric()
-                        ->required(),
+                        ->numeric(),
 
                     TextInput::make('terbeli')
                         ->label('Terbeli')
-                        ->required()
                         ->numeric(),
 
                     TextInput::make('terjual')
                         ->label('Terjual')
-                        ->required()
                         ->numeric(),
 
                     TextInput::make('sisa')
                         ->label('Sisa')
-                        ->required()
                         ->numeric(),
                 ])
                 ->columns(3),
