@@ -20,16 +20,19 @@ class EditBarang extends EditRecord
     
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        // Validasi kode unik per periode (exclude record saat ini)
-        $exists = Barang::where('kode', $data['kode'])
-            ->where('periode_tahun', $this->record->periode_tahun)
-            ->where('kode', '!=', $this->record->kode)
-            ->exists();
-        
-        if ($exists) {
-            throw ValidationException::withMessages([
-                'kode' => 'Kode barang ini sudah digunakan!',
-            ]);
+        // Skip validasi kode jika kode tidak ada dalam data (karena di-disable untuk admin)
+        if (isset($data['kode'])) {
+            // Validasi kode unik per periode (exclude record saat ini)
+            $exists = Barang::where('kode', $data['kode'])
+                ->where('periode_tahun', $this->record->periode_tahun)
+                ->where('kode', '!=', $this->record->kode)
+                ->exists();
+            
+            if ($exists) {
+                throw ValidationException::withMessages([
+                    'kode' => 'Kode barang ini sudah digunakan!',
+                ]);
+            }
         }
         
         return $data;

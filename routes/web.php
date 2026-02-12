@@ -14,6 +14,6 @@ Route::post('/bpkp/daftar-produk/tambah', [DaftarProduk::class, 'addToCart'])
 
 Route::post('/admin/keranjang/checkout', [Keranjang::class, 'checkout'])->name('filament.pages.keranjang.checkout');
 
-Route::get('/permintaan/{id}/cetak-pdf', [PermintaanController::class, 'downloadPdf'])
+Route::get('/permintaan/cetak-pdf/{token}', [PermintaanController::class, 'downloadPdf'])
     ->middleware(['auth'])
     ->name('permintaan.pdf');

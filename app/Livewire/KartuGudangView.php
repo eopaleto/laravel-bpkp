@@ -41,7 +41,7 @@ class KartuGudangView extends Component
     {
         $items = collect();
 
-        // Get data dari LogBarangKeluar
+        // Get data dari LogBarangKeluar (dengan global scope periode_tahun)
         $keluar = LogBarangKeluar::with(['barang', 'unit_kerja'])->get();
         foreach ($keluar as $log) {
             $items->push([
@@ -53,7 +53,7 @@ class KartuGudangView extends Component
             ]);
         }
 
-        // Get data dari LogBarangMasuk
+        // Get data dari LogBarangMasuk (dengan global scope periode_tahun)
         $masuk = LogBarangMasuk::with(['barang', 'unit_kerja'])->get();
         foreach ($masuk as $log) {
             $items->push([
@@ -65,7 +65,7 @@ class KartuGudangView extends Component
             ]);
         }
 
-        // Get all barang names dari tabel barang
+        // Get all barang names dari tabel barang sesuai periode (dengan global scope periode_tahun)
         $allBarang = Barang::pluck('nama')->unique()->sort();
         
         // Ensure all barang appear in items, even if empty

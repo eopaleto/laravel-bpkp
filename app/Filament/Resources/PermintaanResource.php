@@ -8,6 +8,7 @@ use App\Models\Barang;
 use Filament\Forms\Form;
 use App\Models\Permintaan;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Crypt;
 use App\Models\LogPermintaan;
 use App\Models\LogBarangMasuk;
 use App\Models\LogBarangKeluar;
@@ -96,13 +97,6 @@ class PermintaanResource extends Resource
                 //
             ])
             ->actions([
-                Action::make('download_pdf')
-                    ->label('Unduh PDF')
-                    ->color('danger')
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->url(fn($record) => route('permintaan.pdf', $record))
-                    ->openUrlInNewTab()
-                    ->visible(fn($record) => Auth::user()->hasRole(roles: 'User') && $record->status === 'Disetujui'),
                 Action::make('lihat-detail')
                     ->label('Detail')
                     ->icon('heroicon-o-eye')
@@ -114,9 +108,12 @@ class PermintaanResource extends Resource
                                     ->default(function ($record) {
                                         return $record->items->map(function ($item) {
                                             return [
+                                                'id' => $item->id,
                                                 'nama_barang' => $item->nama_barang,
                                                 'jumlah' => $item->jumlah,
-                                                'subtotal' => 'Rp' . number_format($item->subtotal, 0, ',', '.'),
+                                                'jumlah_lama' => $item->jumlah,
+                                                'harga_satuan' => $item->harga_satuan,
+                                                'subtotal' => $item->subtotal,
                                             ];
                                         })->toArray();
                                     })
@@ -124,24 +121,39 @@ class PermintaanResource extends Resource
                                         TextInput::make('nama_barang')
                                             ->label('Barang')
                                             ->disabled(),
-
                                         TextInput::make('jumlah')
                                             ->label('Jumlah')
-                                            ->disabled(),
-                                        TextInput::make('subtotal')
-                                            ->label('Subtotal (Rp)')
-                                            ->disabled(),
+                                            ->numeric()
+                                            ->required()
+                                            ->visible(fn() => Auth::user()?->hasRole('Admin'))
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(function ($state, callable $set, $get) {
+                                                $hargaSatuan = $get('harga_satuan');
+                                                $jumlah = $state ?? 0;
+                                                $subtotal = $jumlah * $hargaSatuan;
+                                                $set('subtotal', $subtotal);
+                                            }),
+                                        TextInput::make('harga_satuan')
+                                            ->label('Harga Satuan')
+                                            ->disabled()
+                                            ->dehydrated(false),
                                     ])
                                     ->columns(3)
-                                    ->disabled()
-                                    ->dehydrated(false),
+                                    ->addable(false)
+                                    ->deletable(false)
+                                    ->reorderable(false),
 
                                 Placeholder::make('total')
                                     ->label('')
-                                    ->content(function ($record) {
-                                        $total = $record->items->sum('subtotal');
+                                    ->content(function ($get) {
+                                        $items = $get('items') ?? [];
+                                        $total = 0;
+                                        foreach ($items as $item) {
+                                            $total += $item['subtotal'] ?? 0;
+                                        }
                                         return 'Total Harga : Rp' . number_format($total, 0, ',', '.');
                                     })
+                                    ->live()
                                     ->extraAttributes([
                                         'class' => 'text-right font-semibold text-red-700 text-lg',
                                     ]),
@@ -163,6 +175,64 @@ class PermintaanResource extends Resource
                         $statusLama = $record->status;
                         $statusBaru = $data['status'];
                         $currentUser = Auth::user();
+                        $adaPerubahanItems = false;
+
+                        // Handle perubahan jumlah barang jika admin mengedit
+                        if (isset($data['items']) && Auth::user()?->hasRole('Admin')) {
+                            foreach ($data['items'] as $itemData) {
+                                if (isset($itemData['id'])) {
+                                    $permintaanItem = \App\Models\PermintaanItems::find($itemData['id']);
+                                    if ($permintaanItem) {
+                                        $jumlahLama = $permintaanItem->jumlah;
+                                        $jumlahBaru = $itemData['jumlah'] ?? $jumlahLama;
+                                        $subtotalBaru = $itemData['subtotal'] ?? ($jumlahBaru * ($permintaanItem->harga_satuan ?? 0));
+
+                                        if ($jumlahLama !== $jumlahBaru) {
+                                            $adaPerubahanItems = true;
+                                            $selisih = $jumlahBaru - $jumlahLama;
+                                            
+                                            // Update PermintaanItems dengan subtotal dari form
+                                            $permintaanItem->update([
+                                                'jumlah' => $jumlahBaru,
+                                                'subtotal' => $subtotalBaru,
+                                            ]);
+
+                                            // Jika status sudah Disetujui, update stok barang
+                                            if ($record->status === 'Disetujui') {
+                                                $barang = Barang::where('nama', $permintaanItem->nama_barang)
+                                                    ->where('periode_tahun', $record->periode_tahun)
+                                                    ->first();
+                                                
+                                                if ($barang) {
+                                                    $barang->decrement('sisa', $selisih);
+                                                    
+                                                    // Log perubahan stok
+                                                    LogBarangKeluar::create([
+                                                        'kode_barang'       => $barang->kode,
+                                                        'unit_kerja_id'     => $currentUser?->unit_id ?? $record->user->unit_id,
+                                                        'jumlah'            => $selisih,
+                                                        'user_id'           => $record->user_id,
+                                                        'sisa_stok_saat_itu'=> $barang->sisa + $selisih,
+                                                        'keterangan'        => 'Update jumlah barang oleh admin dari ' . $jumlahLama . ' menjadi ' . $jumlahBaru,
+                                                        'periode_tahun'     => $record->periode_tahun,
+                                                    ]);
+                                                }
+                                            }
+
+                                            // Log perubahan di LogPermintaan
+                                            LogPermintaan::create([
+                                                'permintaan_id' => $record->id,
+                                                'status_lama' => $statusLama,
+                                                'status_baru' => $statusBaru ?? $statusLama,
+                                                'user_id' => Auth::id(),
+                                                'keterangan' => 'Jumlah barang ' . $permintaanItem->nama_barang . ' diubah dari ' . $jumlahLama . ' menjadi ' . $jumlahBaru,
+                                                'periode_tahun' => $record->periode_tahun,
+                                            ]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
                         if ($statusLama === 'Disetujui' && $statusBaru !== 'Disetujui') {
                             foreach ($record->items as $item) {
@@ -204,9 +274,16 @@ class PermintaanResource extends Resource
                             }
                         }
 
-                        $record->update([
-                            'status' => $statusBaru,
-                        ]);
+                        // Update record Permintaan dengan status dan total yang baru
+                        $updateData = ['status' => $statusBaru];
+                        
+                        // Jika ada perubahan items, recalculate total
+                        if ($adaPerubahanItems) {
+                            $totalBaru = $record->items()->sum('subtotal');
+                            $updateData['total'] = $totalBaru;
+                        }
+                        
+                        $record->update($updateData);
 
                         LogPermintaan::create([
                             'permintaan_id' => $record->id,
@@ -222,7 +299,14 @@ class PermintaanResource extends Resource
                             ->body('Status permintaan diubah menjadi: ' . $statusBaru)
                             ->success()
                             ->send();
-                    })
+                    }),
+                Action::make('download_pdf')
+                    ->label('Unduh PDF')
+                    ->color('danger')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->url(fn($record) => route('permintaan.pdf', Crypt::encryptString($record->id)))
+                    ->openUrlInNewTab()
+                    ->visible(fn($record) => Auth::user()->hasRole(roles: ['User', 'Admin']) && $record->status === 'Disetujui'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

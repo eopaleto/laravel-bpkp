@@ -62,7 +62,7 @@ class BarangResource extends Resource
 
                     TextInput::make('kode')
                         ->label('Kode')
-                        ->required()
+                        ->required(false)
                         ->maxLength(20)
                         ->disabled($isAdmin),
 
@@ -76,6 +76,7 @@ class BarangResource extends Resource
                         ->label('Kategori')
                         ->relationship('kategori', 'nama')
                         ->required()
+                        ->dehydrated(false)
                         ->disabled($isAdmin),
 
                     TextInput::make('satuan')
@@ -148,7 +149,8 @@ class BarangResource extends Resource
                         ->label('Keterangan')
                         ->maxLength(200)
                         ->columnSpan(2)
-                        ->disabled($isAdmin),
+                        ->disabled($isAdmin)
+                        ->dehydrated(false),
                 ])
                 ->columns(3),
 
@@ -161,11 +163,13 @@ class BarangResource extends Resource
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                         ->disk('public')
                         ->visibility('public')
-                        ->disabled($isAdmin),
+                        ->disabled($isAdmin)
+                        ->dehydrated(false),
 
                     DatePicker::make('expired')
                         ->label('Expired')
-                        ->disabled($isAdmin),
+                        ->disabled($isAdmin)
+                        ->dehydrated(false),
                 ])
                 ->columns(2),
         ]);

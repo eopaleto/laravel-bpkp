@@ -21,20 +21,36 @@ class CreateBarang extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['periode_tahun'] = $this->getPeriodeTahun();
+        $periodeTahun = $this->getPeriodeTahun();
+        $data['periode_tahun'] = $periodeTahun;
 
-        $this->validate([
-            'data.kode' => [
-                function ($attribute, $value, $fail) use ($data) {
-                    if (Barang::where('kode', $value)
-                        ->where('periode_tahun', $data['periode_tahun'])
-                        ->exists()
-                    ) {
-                        $fail('Kode barang ini sudah digunakan!');
-                    }
-                },
-            ],
-        ]);
+        // Auto-generate kode jika kosong
+        if (empty($data['kode'])) {
+            $lastBarang = Barang::where('periode_tahun', $periodeTahun)
+                ->orderBy('kode', 'desc')
+                ->first();
+            
+            if ($lastBarang) {
+                // Extract number from last kode
+                preg_match('/(\d+)/', $lastBarang->kode, $matches);
+                $lastNumber = $matches[1] ?? 0;
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+            
+            $data['kode'] = 'BRG' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        } else {
+            // Validasi kode unik per periode
+            if (Barang::where('kode', $data['kode'])
+                ->where('periode_tahun', $periodeTahun)
+                ->exists()
+            ) {
+                throw ValidationException::withMessages([
+                    'kode' => 'Kode barang ini sudah digunakan!',
+                ]);
+            }
+        }
 
         return $data;
     }
@@ -51,3 +67,4 @@ class CreateBarang extends CreateRecord
         ]);
     }
 }
+
