@@ -27,8 +27,6 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
 use App\Filament\Resources\PermintaanResource\Pages;
-use App\Filament\Resources\PermintaanResource\Pages\EditPermintaan;
-use App\Filament\Resources\PermintaanResource\Pages\ListPermintaans;
 
 class PermintaanResource extends Resource
 {
@@ -79,7 +77,7 @@ class PermintaanResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('user.name')->label('Nama Lengkap')->searchable(),
-                TextColumn::make('user.unit.name')->label('Nama Unit')->searchable(),
+                TextColumn::make('user.unit.name')->label('Nama Unit')->searchable()->limit(40),
                 TextColumn::make('total')->label('Total Harga')->money('IDR'),
                 TextColumn::make('total_barang')
                     ->label('Total Barang')
@@ -106,12 +104,17 @@ class PermintaanResource extends Resource
                                 Repeater::make('items')
                                     ->label('Daftar Barang')
                                     ->default(function ($record) {
-                                        return $record->items->map(function ($item) {
+                                        return $record->items->map(function ($item) use ($record) {
+                                            $barang = Barang::where('nama', $item->nama_barang)
+                                                ->where('periode_tahun', $record->periode_tahun)
+                                                ->first();
+                                            
                                             return [
                                                 'id' => $item->id,
                                                 'nama_barang' => $item->nama_barang,
                                                 'jumlah' => $item->jumlah,
                                                 'jumlah_lama' => $item->jumlah,
+                                                'satuan' => $barang?->satuan,
                                                 'harga_satuan' => $item->harga_satuan,
                                                 'subtotal' => $item->subtotal,
                                             ];
@@ -133,12 +136,16 @@ class PermintaanResource extends Resource
                                                 $subtotal = $jumlah * $hargaSatuan;
                                                 $set('subtotal', $subtotal);
                                             }),
+                                        TextInput::make('satuan')
+                                            ->label('Satuan')
+                                            ->disabled()
+                                            ->dehydrated(false),
                                         TextInput::make('harga_satuan')
                                             ->label('Harga Satuan')
                                             ->disabled()
-                                            ->dehydrated(false),
+                                            ->dehydrated(false)
                                     ])
-                                    ->columns(3)
+                                    ->columns(4)
                                     ->addable(false)
                                     ->deletable(false)
                                     ->reorderable(false),
@@ -191,7 +198,6 @@ class PermintaanResource extends Resource
                                             $adaPerubahanItems = true;
                                             $selisih = $jumlahBaru - $jumlahLama;
                                             
-                                            // Update PermintaanItems dengan subtotal dari form
                                             $permintaanItem->update([
                                                 'jumlah' => $jumlahBaru,
                                                 'subtotal' => $subtotalBaru,

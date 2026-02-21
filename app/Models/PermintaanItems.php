@@ -15,6 +15,7 @@ class PermintaanItems extends Model
         'permintaan_checkout_id',
         'nama_barang',
         'jumlah',
+        'satuan',
         'harga_satuan',
         'subtotal',
         'periode_tahun',
