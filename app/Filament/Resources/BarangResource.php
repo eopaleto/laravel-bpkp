@@ -158,7 +158,7 @@ class BarangResource extends Resource
                     FileUpload::make('avatar')
                         ->label('Gambar')
                         ->directory('barang')
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/avif'])
                         ->disk('public')
                         ->visibility('public')
                         ->disabled($isAdmin),
