@@ -80,9 +80,19 @@
                 </div>
 
                 <!-- Add to Cart Button -->
-                <button wire:click="addToCart('{{ $item->kode }}')"
-                    class="mt-2 md:mt-4 w-full bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white text-xs md:text-sm font-semibold px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl transition duration-300 flex items-center justify-center gap-1 md:gap-2 shadow-sm">
-                    <span class="hidden md:inline">+</span> <span class="md:hidden">+</span> Keranjang
+                <button 
+                    wire:click="addToCart('{{ $item->kode }}')"
+                    @if($item->sisa == 0) disabled @endif
+                    class="mt-2 md:mt-4 w-full 
+                    {{ $item->sisa == 0 
+                        ? 'bg-gray-400 disabled:cursor-not-allowed hover:bg-gray-400' 
+                        : 'bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700' 
+                    }} 
+                    text-white text-xs md:text-sm font-semibold px-2 md:px-4 py-1.5 md:py-2 rounded-lg md:rounded-xl transition duration-300 flex items-center justify-center gap-1 md:gap-2 shadow-sm">
+                    
+                    <span class="hidden md:inline">+</span> 
+                    <span class="md:hidden">+</span> 
+                    Keranjang
                 </button>
             </div>
         @empty

@@ -53,6 +53,7 @@
                                         <th class="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">Unit Kerja</th>
                                         <th class="px-6 py-3 text-left font-semibold text-gray-700 dark:text-gray-300">Tanggal</th>
                                         <th class="px-6 py-3 text-right font-semibold text-gray-700 dark:text-gray-300">Jumlah</th>
+                                        <th class="px-6 py-3 text-right font-semibold text-gray-700 dark:text-gray-300">Sisa Stok Saat Itu</th>
                                         <th class="px-6 py-3 text-center font-semibold text-gray-700 dark:text-gray-300">Jenis</th>
                                     </tr>
                                 </thead>
@@ -67,6 +68,9 @@
                                             </td>
                                             <td class="px-6 py-3 text-right font-semibold text-gray-800 dark:text-gray-200">
                                                 {{ $item['jumlah'] }}
+                                            </td>
+                                            <td class="px-6 py-3 text-right font-semibold text-gray-800 dark:text-gray-200">
+                                                {{ $item['sisa_stok'] }}
                                             </td>
                                             <td class="px-6 py-3 text-center">
                                                 @if($item['jenis'] === 'barang_keluar')

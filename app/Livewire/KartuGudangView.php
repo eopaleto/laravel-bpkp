@@ -3,9 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
-use Livewire\Attributes\On;
-use App\Models\LogBarangKeluar;
-use App\Models\LogBarangMasuk;
+use App\Models\KartuGudang;
 use App\Models\Barang;
 
 class KartuGudangView extends Component
@@ -41,27 +39,16 @@ class KartuGudangView extends Component
     {
         $items = collect();
 
-        // Get data dari LogBarangKeluar (dengan global scope periode_tahun)
-        $keluar = LogBarangKeluar::with(['barang', 'unit_kerja'])->get();
-        foreach ($keluar as $log) {
+        // Get data dari KartuGudang (dengan global scope periode_tahun)
+        $kartuGudang = KartuGudang::with(['barang', 'unitKerja'])->get();
+        foreach ($kartuGudang as $log) {
             $items->push([
-                'nama_barang' => $log->barang?->nama ?? $log->kode_barang,
-                'unit_kerja' => $log->unit_kerja?->name,
-                'tanggal' => $log->created_at,
-                'jumlah' => $log->jumlah,
-                'jenis' => 'barang_keluar',
-            ]);
-        }
-
-        // Get data dari LogBarangMasuk (dengan global scope periode_tahun)
-        $masuk = LogBarangMasuk::with(['barang', 'unit_kerja'])->get();
-        foreach ($masuk as $log) {
-            $items->push([
-                'nama_barang' => $log->barang?->nama ?? $log->kode_barang,
-                'unit_kerja' => $log->unit_kerja?->name,
-                'tanggal' => $log->created_at,
-                'jumlah' => $log->jumlah,
-                'jenis' => 'barang_masuk',
+                'nama_barang' => $log->nama_barang,
+                'unit_kerja' => $log->unitKerja?->name,
+                'tanggal' => $log->tanggal_keluar,
+                'jumlah' => $log->jumlah_keluar,
+                'sisa_stok' => $log->sisa_stok,
+                'jenis' => $log->jenis,
             ]);
         }
 
@@ -76,6 +63,7 @@ class KartuGudangView extends Component
                     'unit_kerja' => null,
                     'tanggal' => null,
                     'jumlah' => 0,
+                    'sisa_stok' => 0,
                     'jenis' => null,
                 ]);
             }
@@ -120,7 +108,7 @@ class KartuGudangView extends Component
             'totalPages' => $totalPages,
             'currentPage' => $this->page,
             'totalItems' => $totalItems,
-        ])->layout('empty');
+        ]);
     }
 
     public function nextPage()
@@ -142,6 +130,7 @@ class KartuGudangView extends Component
         $this->page = $page;
     }
 }
+
 
 
 

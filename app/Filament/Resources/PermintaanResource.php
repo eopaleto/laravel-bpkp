@@ -75,6 +75,7 @@ class PermintaanResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('user.name')->label('Nama Lengkap')->searchable(),
                 TextColumn::make('user.unit.name')->label('Nama Unit')->searchable()->limit(40),
