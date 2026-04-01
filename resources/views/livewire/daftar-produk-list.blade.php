@@ -82,9 +82,9 @@
                 <!-- Add to Cart Button -->
                 <button 
                     wire:click="addToCart('{{ $item->kode }}')"
-                    @if($item->sisa == 0) disabled @endif
+                    @if($item->sisa <= 0) disabled @endif
                     class="mt-2 md:mt-4 w-full 
-                    {{ $item->sisa == 0 
+                    {{ $item->sisa <= 0 
                         ? 'bg-gray-400 disabled:cursor-not-allowed hover:bg-gray-400' 
                         : 'bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700' 
                     }} 
